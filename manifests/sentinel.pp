@@ -112,19 +112,15 @@ define redis::sentinel (
     'Fedora', 'RedHat', 'CentOS', 'OEL', 'OracleLinux', 'Amazon', 'Scientific': {
       if versioncmp($::operatingsystemmajrelease, '7') >= 0 {
         $has_systemd = true
-        $service_file = "/usr/lib/systemd/system/redis-sentinel_${sentinel_name}.service"
+        $service_file = "/usr/lib/systemd/system/redis-sentinel_${redis_name}.service"
       }
     }
-    'Debian': {
-      if versioncmp($::operatingsystemmajrelease, '8') >= 0 {
+    'Debian', 'Ubuntu': {
+      if versioncmp($::init_system, 'systemd') >= 0 {
         $has_systemd = true
-        $service_file = "/etc/systemd/system/redis-sentinel_${sentinel_name}.service"
-      }
-    }
-    'Ubuntu': {
-      if versioncmp($::operatingsystemmajrelease, '15.04') >= 0 {
-        $has_systemd = true
-        $service_file = "/etc/systemd/system/redis-sentinel_${sentinel_name}.service"
+        $service_file = "/etc/systemd/system/redis-sentinel_${redis_name}.service"
+      } else {
+        $has_systemd = false
       }
     }
     default:  {
