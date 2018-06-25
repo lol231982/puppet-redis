@@ -108,9 +108,29 @@ define redis::sentinel (
   }
 
   # startup script
-  if ($::osfamily == 'RedHat' and versioncmp($::operatingsystemmajrelease, '7') >=0 and $::operatingsystem != 'Amazon') {
-    $service_file = "/usr/lib/systemd/system/redis-sentinel_${sentinel_name}.service"
-    exec { "systemd_service_${sentinel_name}_preset":
+  case $::operatingsystem {
+    'Fedora', 'RedHat', 'CentOS', 'OEL', 'OracleLinux', 'Amazon', 'Scientific': {
+      if versioncmp($::operatingsystemmajrelease, '7') >= 0 {
+        $has_systemd = true
+        $service_file = "/usr/lib/systemd/system/redis-sentinel_${sentinel_name}.service"
+      }
+    }
+    'Debian', 'Ubuntu': {
+      if versioncmp($::init_system, 'systemd') >= 0 {
+        $has_systemd = true
+        $service_file = "/etc/systemd/system/redis-sentinel_${sentinel_name}.service"
+      } else {
+        $has_systemd = false
+      }
+    }
+    default:  {
+      $has_systemd = false
+    }
+  }
+
+  # startup script
+  if $has_systemd {
+    exec { "systemd_service_sentinel_${sentinel_name}_preset":
       command     => "/bin/systemctl preset redis-sentinel_${sentinel_name}.service",
       notify      => Service["redis-sentinel_${sentinel_name}"],
       refreshonly => true,
@@ -118,13 +138,14 @@ define redis::sentinel (
 
     file { $service_file:
       ensure  => file,
-      mode    => '0755',
+      mode    => '0644',
       content => template('redis/systemd/sentinel.service.erb'),
       require => File[$conf_file],
-      notify  => Exec["systemd_service_${sentinel_name}_preset"],
+      notify  => Exec["systemd_service_sentinel_${sentinel_name}_preset"],
     }
   } else {
     $service_file = "/etc/init.d/redis-sentinel_${sentinel_name}"
+
     file { $service_file:
       ensure  => file,
       mode    => '0755',
