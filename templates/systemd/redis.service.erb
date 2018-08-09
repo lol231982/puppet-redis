@@ -14,6 +14,7 @@ ExecStartPre=/bin/cp -u <%= @conf_file %> <%= @redis_run_dir %>/<%= @conf_file_n
 ExecStartPre=/bin/chown <%= @redis_user or 'root' %>:<%= @redis_group or 'root' %> <%= @redis_run_dir %>/<%= @conf_file_name %>
 ExecStart=/usr/bin/redis-server <%= @redis_run_dir %>/<%= @conf_file_name %> --daemonize no
 ExecStop=/usr/bin/redis-cli -p <%= @redis_port %> shutdown
+Restart=on-failure
 User=<%= @redis_user or 'root' %>
 Group=<%= @redis_group or 'root' %>
 
