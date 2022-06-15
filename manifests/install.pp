@@ -21,7 +21,7 @@
 #   The redis system group. Default value is 'undef', which results to 'root' as system group.
 #
 # [*download_base*]
-#   Url where to find the source tar.gz. Default value is 'http://download.redis.io/releases'
+#   Url where to find the source tar.gz. Default value is 'http://download.redis.io'
 #
 class redis::install (
   $redis_version     = $::redis::params::redis_version,
